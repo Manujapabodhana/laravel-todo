@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use App\Models\Task;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -47,18 +47,20 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
-     public function getJWTIdentifier():mixed
+    // ✅ JWT REQUIRED METHODS
+    public function getJWTIdentifier(): mixed
     {
         return $this->getKey();
     }
 
-    /**
-     * Return a key value array, containing any custom claims to be added to the JWT.
-     *
-     * @return array
-     */
     public function getJWTCustomClaims(): array
     {
         return [];
+    }
+
+    // ✅ RELATION: one user has many tasks
+    public function tasks()
+    {
+        return $this->hasMany(Task::class);
     }
 }

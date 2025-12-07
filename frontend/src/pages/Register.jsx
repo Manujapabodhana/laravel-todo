@@ -24,20 +24,47 @@ export default function Register() {
     setLoading(true);
     try {
       // Register the user
-      await api.post("/auth/register", { name, email, password, password_confirmation });
+      console.log("Registering user:", { name, email });
+      const registerResponse = await api.post("/auth/register", { name, email, password, password_confirmation });
+      console.log("Registration successful:", registerResponse.data);
       
       // Auto-login after successful registration
+      console.log("Auto-logging in...");
       const loginResponse = await api.post("/auth/login", { email, password });
+      console.log("Login successful:", loginResponse.data);
+      
       const { access_token } = loginResponse.data;
       
       // Store token in localStorage
       localStorage.setItem("token", access_token);
+      console.log("Token stored, redirecting to dashboard...");
       
       // Navigate to dashboard with full page reload to ensure App re-renders
       window.location.href = "/dashboard";
     } catch (err) {
       console.error("Registration error:", err);
-      const errorMessage = err?.response?.data?.error || err?.response?.data?.message || JSON.stringify(err?.response?.data) || "Registration failed.";
+      console.error("Error response:", err?.response);
+      
+      // Parse error message properly
+      let errorMessage = "Registration failed.";
+      if (err?.response?.data) {
+        const data = err.response.data;
+        // Try to parse if it's a JSON string
+        if (typeof data === 'string') {
+          try {
+            const parsed = JSON.parse(data);
+            errorMessage = Object.values(parsed).flat().join(", ");
+          } catch {
+            errorMessage = data;
+          }
+        } else if (data.error) {
+          errorMessage = data.error;
+        } else if (data.message) {
+          errorMessage = data.message;
+        } else {
+          errorMessage = JSON.stringify(data);
+        }
+      }
       setError(errorMessage);
     } finally {
       setLoading(false);
